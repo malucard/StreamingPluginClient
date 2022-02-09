@@ -28,6 +28,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.zip.CRC32;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JOptionPane;
 
@@ -47,7 +48,7 @@ public class ImageStreamer {
     private final UDPClient udpClient;
 
     public ImageStreamer(String ip) throws SocketException {
-        tcpClient = new TCPClient(ip, 8092, 200);
+        tcpClient = new TCPClient(ip, 8092, 2000);
         udpClient = new UDPClient(9445);
         new Thread(udpClient, "UDPClient").start();
         udpClient.setOnDataCallback(this::udpDataHandler);
@@ -116,15 +117,15 @@ public class ImageStreamer {
                 if (pong == 0x16) {
                     // log.info("Ping...Pong!");
                 } else {
-                    log.info("Got no valid response to a Ping. Disconnecting.");
+                    System.out.println("Got no valid response to a Ping. Disconnecting.");
                     tcpClient.abort();
                 }
             } catch (IOException e) {
-                log.info("Failed to get PONG. Disconnecting.");
+                System.out.println("Failed to get PONG. Disconnecting.");
                 tcpClient.abort();
             }
         } else {
-            log.info("Sending the PING failed");
+            System.out.println("Sending the PING failed");
         }
     }
 
@@ -140,46 +141,42 @@ public class ImageStreamer {
 
     @Synchronized("lock")
     private void udpDataHandler(byte[] data) {
-        if (state == DataState.UNKNOWN) {
-            // System.out.println("GET CRC");
-            if (data.length == 4) {
-                ByteBuffer wrapped = ByteBuffer.wrap(data); // big-endian by default
-                curcrc32 = wrapped.getInt(); // 1
-                state = DataState.CRC32_RECEIVED;
-            } else {
-
-                state = DataState.UNKNOWN;
-                return;
-            }
-        } else if (state == DataState.CRC32_RECEIVED) {
-            // System.out.println("GET Size");
-            if (data.length == 8) {
-                ByteBuffer wrapped = ByteBuffer.wrap(data); // big-endian by default
-                curJPEGSize = (int) wrapped.getLong();
-                jpegBuffer = new byte[curJPEGSize];
-                state = DataState.RECEIVING_IMAGE;
-                curLenPos = 0;
-            } else {
-                // System.out.println("...");
-                state = DataState.UNKNOWN;
-                return;
-            }
-        } else if (state == DataState.RECEIVING_IMAGE) {
-            // System.out.println("GET IMAGE");
+        if(state == DataState.RECEIVING_IMAGE) {
             System.arraycopy(data, 0, jpegBuffer, curLenPos, data.length > curJPEGSize ? curJPEGSize : data.length);
 
             curJPEGSize -= data.length;
             curLenPos += data.length;
             if (curJPEGSize <= 0) {
-                CRC32 crc = new CRC32();
-                crc.update(jpegBuffer);
-                if ((int) crc.getValue() == curcrc32) {
-                    imageProvider.updateImage(Utilities.byteArrayToImage(jpegBuffer));
-                    framesThisSecond++;
-                } else {
-                    System.out.println("Hash mismatch, dropping frame.");
+                try {
+                    //CRC32 crc = new CRC32();
+                    //crc.update(jpegBuffer);
+                    if (true) {// ((int) crc.getValue() == curcrc32) {
+                        BufferedImage img = Utilities.byteArrayToImage(jpegBuffer);
+                        imageProvider.updateImage(img, img.getWidth(), img.getHeight());
+                        framesThisSecond++;
+                    } else {
+                        System.out.println("Hash mismatch, dropping frame.");
+                    }
+                } catch(Exception e) {
+                    System.out.println("Error decoding, dropping frame.");
                 }
                 state = DataState.UNKNOWN;
+            }
+        } else if (data.length == 4) {
+            ByteBuffer wrapped = ByteBuffer.wrap(data);
+            System.out.println("Server streaming at " + wrapped.get() + " fps, " + wrapped.get() + "% quality, " + wrapped.getShort() + "p");
+            state = DataState.UNKNOWN;
+            return;
+        } else  if (data.length == 8) {
+            ByteBuffer wrapped = ByteBuffer.wrap(data); // big-endian by default
+            //curcrc32 = wrapped.getInt(); // 1
+            curJPEGSize = (int) wrapped.getLong();//((int) wrapped.get()) << 16 | (int) wrapped.getShort() & 0xFFFF;
+            if(curJPEGSize <= 0) {
+                System.out.println("Error receiving frame size, dropping frame.");
+            } else {
+                jpegBuffer = new byte[curJPEGSize];
+                state = DataState.RECEIVING_IMAGE;
+                curLenPos = 0;
             }
         }
 

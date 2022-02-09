@@ -8,7 +8,7 @@ Start the plugin via the [WiiUPluginSystemLoader](https://github.com/Maschell/Wi
 - provide the ip address of your Wii U as a argument. Example: `java -jar StreamingPluginClient[...].jar --ip 192.168.0.11`
 - **or** just double click on the .jar. A little dialog should appear where you can enter the IP address of your Wii U console.
 
-Requires Java 8.
+Requires Java 15.
 
 # Building
 

@@ -28,6 +28,8 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import org.libjpegturbo.turbojpeg.*;
+
 public class Utilities {
     private Utilities() {
         //
@@ -43,14 +45,9 @@ public class Utilities {
         return hex.toString();
     }
 
-    public static BufferedImage byteArrayToImage(byte[] bytes) {
-        BufferedImage bufferedImage = null;
-        try {
-            InputStream inputStream = new ByteArrayInputStream(bytes);
-            bufferedImage = ImageIO.read(inputStream);
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
-        return bufferedImage;
+    public static BufferedImage byteArrayToImage(byte[] bytes) throws Exception {
+        TJDecompressor tjd = new TJDecompressor(bytes);
+        BufferedImage img = tjd.decompress(tjd.getWidth(), tjd.getHeight(), BufferedImage.TYPE_INT_RGB, 0);
+        return img;
     }
 }

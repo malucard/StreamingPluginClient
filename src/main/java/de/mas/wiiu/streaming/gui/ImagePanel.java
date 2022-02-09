@@ -34,28 +34,30 @@ public final class ImagePanel extends JPanel {
      */
     private static final long serialVersionUID = -127096088663141229L;
     private Image image;
-    private final int preferedWidth;
-    private final int preferedHeight;
+    private int preferredWidth;
+    private int preferredHeight;
 
     public ImagePanel(int width, int height) {
         super(true);
-        preferedWidth = width;
-        preferedHeight = height;
+        preferredWidth = width;
+        preferredHeight = height;
     }
 
-    public void setImage(Image image) {
+    public void setImage(Image image, int width, int height) {
+        preferredWidth = width;
+        preferredHeight = height;
         this.image = image;
         repaint();
     }
 
     public Dimension getPreferredSize() {
-        return new Dimension(preferedWidth, preferedHeight);
+        return new Dimension(preferredWidth, preferredHeight);
     }
 
     public void paint(Graphics g) {
         super.paint(g);
         if (image != null) {
-            g.drawImage(image, 0, 0, getWidth(), getHeight(), 0, 0, image.getWidth(this), image.getHeight(this), this);
+            g.drawImage(image, 0, 0, preferredWidth, preferredHeight, 0, 0, image.getWidth(this), image.getHeight(this), this);
         }
     }
 }

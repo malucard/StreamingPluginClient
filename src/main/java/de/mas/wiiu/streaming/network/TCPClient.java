@@ -63,7 +63,7 @@ final public class TCPClient {
         try {
             sock.close();
         } catch (IOException e) {
-            log.info(e.getMessage()); // TODO: handle
+            System.out.println(e.getMessage()); // TODO: handle
             return false;
         }
         return true;
@@ -97,7 +97,7 @@ final public class TCPClient {
         try {
             return in.readShort();
         } catch (IOException e) {
-            log.info(e.getMessage());
+            System.out.println(e.getMessage());
             throw e;
         }
     }
@@ -107,7 +107,7 @@ final public class TCPClient {
         try {
             return in.readInt();
         } catch (IOException e) {
-            log.info(e.getMessage());
+            System.out.println(e.getMessage());
             throw e;
         }
     }

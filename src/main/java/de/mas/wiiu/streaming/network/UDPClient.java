@@ -46,7 +46,7 @@ public final class UDPClient implements Runnable {
 
     @Override
     public void run() {
-        log.info("UDPClient running.");
+        System.out.println("UDPClient running.");
         byte[] receiveData = new byte[1400];
         while (true) {
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);

@@ -22,10 +22,10 @@
 
 package de.mas.wiiu.streaming.gui;
 import java.awt.Image;
-import java.util.function.Consumer;
+import java.util.function.ObjIntConsumer;
 
 public interface IImageProvider {
 
-    void setOnImageChange(Consumer<Image> function);
+    void setOnImageChange(ObjIntConsumer<Image> function);
 
 }

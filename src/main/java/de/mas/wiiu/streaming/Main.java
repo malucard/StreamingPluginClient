@@ -30,17 +30,38 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import javax.sound.sampled.*;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.libjpegturbo.turbojpeg.TJDecompressor;
 
 import de.mas.wiiu.streaming.gui.StreamWindow;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
+        /*new Thread(() -> {
+            try {
+                AudioFormat fmt = new AudioFormat(8000, 16, 1, true, true);
+                TargetDataLine mic = (TargetDataLine) AudioSystem.getLine(new DataLine.Info(TargetDataLine.class, fmt));
+                mic.open(fmt);
+                byte[] data = new byte[mic.getBufferSize() / 5];
+                mic.start();
+                SourceDataLine clip = (SourceDataLine) AudioSystem.getLine(new DataLine.Info(SourceDataLine.class, fmt));
+                clip.open(fmt);
+                clip.start();
+                while(true) {
+                    int numBytesRead = mic.read(data, 0, 1024);
+                    clip.write(data, 0, numBytesRead);
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }).start();*/
         if(GraphicsEnvironment.isHeadless()) {
             System.out.println("This program does not support running in a headless environment!");
             System.exit(2);

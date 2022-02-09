@@ -23,20 +23,20 @@
 package de.mas.wiiu.streaming.gui;
 
 import java.awt.Image;
-import java.util.function.Consumer;
+import java.util.function.ObjIntConsumer;
 
 public final class ImageProvider implements IImageProvider {
 
-    private Consumer<Image> onImageChangeFunction = null;
+    private ObjIntConsumer<Image> onImageChangeFunction = null;
 
-    public void updateImage(Image image) {
+    public void updateImage(Image image, int width, int height) {
         if (onImageChangeFunction != null) {
-            onImageChangeFunction.accept(image);
+            onImageChangeFunction.accept(image, width << 16 | height);
         }
     }
 
     @Override
-    public void setOnImageChange(Consumer<Image> function) {
+    public void setOnImageChange(ObjIntConsumer<Image> function) {
         this.onImageChangeFunction = function;
     }
 
